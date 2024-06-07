@@ -10,10 +10,8 @@ namespace Utility
     {
         public const string Role_SiteAdmin = "SiteAdmin";
         public const string Role_SuperAdmin = "SuperAdmin";
-        public const string Role_User = "User";
-        public const string Role_View = "View";
-        public const string Role_Create = "Create";
-        public const string Role_Edit = "Edit";
-        public const string Role_Delete = "Delete";
+        public const string Role_Customer = "Customer";
+        public const string Role_Company = "Company";
+        public const string Role_Employee = "Employee";
     }
 }

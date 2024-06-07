@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using asyncDrive.Models.Domain;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 
 namespace asyncDrive.DataAccess
 {
@@ -38,6 +40,6 @@ namespace asyncDrive.DataAccess
 
             ////seed user to the database
             //modelBuilder.Entity<User>().HasData(users);
-        }
+        }        
     }
 }

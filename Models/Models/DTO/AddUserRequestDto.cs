@@ -24,5 +24,7 @@ namespace asyncDrive.Models.DTO
         public string? Country { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime UpdatedOn { get; set; }
+
+        public string LoginUserId { get; set; }
     }
 }

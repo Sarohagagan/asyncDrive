@@ -1,4 +1,6 @@
-﻿namespace asyncDrive.Models.Domain
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace asyncDrive.Models.Domain
 {
     public class Website
     {
@@ -12,6 +14,7 @@
 
         public Guid UserId { get; set; }
         //Navigation properties
+        [ForeignKey("UserId")]
         public User User { get; set; }
     }
 }

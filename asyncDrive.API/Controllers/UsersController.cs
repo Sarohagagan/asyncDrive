@@ -5,6 +5,7 @@ using asyncDrive.API.Repositories;
 using asyncDrive.API.Repositories.IRepository;
 using asyncDrive.Models.Domain;
 using asyncDrive.Models.DTO;
+using Utility;
 
 
 namespace asyncDrive.API.Controllers
@@ -81,7 +82,7 @@ namespace asyncDrive.API.Controllers
         }
         //POST to Create New User
         [HttpPost]
-        //[Authorize(Roles = "Writer")]
+        [Authorize(Roles = $"{SD.Role_SiteAdmin+","+SD.Role_SuperAdmin}")]
         public async Task<IActionResult> Create([FromBody] AddUserRequestDto addUserRequestDto)
         {
             if (ModelState.IsValid)
@@ -99,7 +100,8 @@ namespace asyncDrive.API.Controllers
                     State = addUserRequestDto.State,
                     Country = addUserRequestDto.Country,
                     CreatedOn = DateTime.UtcNow,
-                    UpdatedOn = DateTime.UtcNow
+                    UpdatedOn = DateTime.UtcNow,
+                    LoginUserId = addUserRequestDto.LoginUserId,
                 };
 
                 userDomainModel = await unitOfWork.User.AddAsync(userDomainModel);

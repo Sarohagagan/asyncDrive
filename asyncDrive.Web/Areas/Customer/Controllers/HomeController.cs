@@ -1,9 +1,11 @@
 using asyncDrive.Web.Models;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace asyncDrive.Web.Controllers
+namespace asyncDrive.Web.Areas.Customer.Controllers
 {
+    [Area("Customer")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

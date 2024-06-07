@@ -3,12 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace DataAccess.Migrations.asyncDriveAuthDb
 {
     /// <inheritdoc />
-    public partial class addasyncDriveAuthDbContextDB : Migration
+    public partial class addauthdb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,6 +30,13 @@ namespace DataAccess.Migrations.asyncDriveAuthDb
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Discriminator = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    StreetAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    City = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    State = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PostalCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Pwd = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -156,20 +161,6 @@ namespace DataAccess.Migrations.asyncDriveAuthDb
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.InsertData(
-                table: "AspNetRoles",
-                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[,]
-                {
-                    { "00493d86-007f-4cbf-95cc-0d3fb445a4db", "00493d86-007f-4cbf-95cc-0d3fb445a4db", "Create", "CREATE" },
-                    { "0ff37f2f-601b-4924-9bc5-28923936b6a7", "0ff37f2f-601b-4924-9bc5-28923936b6a7", "User", "USER" },
-                    { "1e7842ae-ef57-4d7b-889a-950789a621c2", "1e7842ae-ef57-4d7b-889a-950789a621c2", "SuperAdmin", "SUPERADMIN" },
-                    { "2a35652a-6d71-4188-9d50-4dc76b14f298", "2a35652a-6d71-4188-9d50-4dc76b14f298", "View", "VIEW" },
-                    { "621e6d91-8765-43f4-b966-a5ea786d29f3", "621e6d91-8765-43f4-b966-a5ea786d29f3", "Delete", "DELETE" },
-                    { "913b14eb-9c92-449b-af81-50b254fc3d9a", "913b14eb-9c92-449b-af81-50b254fc3d9a", "Edit", "EDIT" },
-                    { "d9b5353e-3c0e-4fc4-9c8b-57291c410a15", "d9b5353e-3c0e-4fc4-9c8b-57291c410a15", "SiteAdmin", "SITEADMIN" }
                 });
 
             migrationBuilder.CreateIndex(

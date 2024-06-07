@@ -47,57 +47,6 @@ namespace DataAccess.Migrations.asyncDriveAuthDb
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "d9b5353e-3c0e-4fc4-9c8b-57291c410a15",
-                            ConcurrencyStamp = "d9b5353e-3c0e-4fc4-9c8b-57291c410a15",
-                            Name = "SiteAdmin",
-                            NormalizedName = "SITEADMIN"
-                        },
-                        new
-                        {
-                            Id = "1e7842ae-ef57-4d7b-889a-950789a621c2",
-                            ConcurrencyStamp = "1e7842ae-ef57-4d7b-889a-950789a621c2",
-                            Name = "SuperAdmin",
-                            NormalizedName = "SUPERADMIN"
-                        },
-                        new
-                        {
-                            Id = "0ff37f2f-601b-4924-9bc5-28923936b6a7",
-                            ConcurrencyStamp = "0ff37f2f-601b-4924-9bc5-28923936b6a7",
-                            Name = "User",
-                            NormalizedName = "USER"
-                        },
-                        new
-                        {
-                            Id = "2a35652a-6d71-4188-9d50-4dc76b14f298",
-                            ConcurrencyStamp = "2a35652a-6d71-4188-9d50-4dc76b14f298",
-                            Name = "View",
-                            NormalizedName = "VIEW"
-                        },
-                        new
-                        {
-                            Id = "00493d86-007f-4cbf-95cc-0d3fb445a4db",
-                            ConcurrencyStamp = "00493d86-007f-4cbf-95cc-0d3fb445a4db",
-                            Name = "Create",
-                            NormalizedName = "CREATE"
-                        },
-                        new
-                        {
-                            Id = "913b14eb-9c92-449b-af81-50b254fc3d9a",
-                            ConcurrencyStamp = "913b14eb-9c92-449b-af81-50b254fc3d9a",
-                            Name = "Edit",
-                            NormalizedName = "EDIT"
-                        },
-                        new
-                        {
-                            Id = "621e6d91-8765-43f4-b966-a5ea786d29f3",
-                            ConcurrencyStamp = "621e6d91-8765-43f4-b966-a5ea786d29f3",
-                            Name = "Delete",
-                            NormalizedName = "DELETE"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -136,6 +85,11 @@ namespace DataAccess.Migrations.asyncDriveAuthDb
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -188,6 +142,10 @@ namespace DataAccess.Migrations.asyncDriveAuthDb
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -269,6 +227,33 @@ namespace DataAccess.Migrations.asyncDriveAuthDb
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Models.ApplicationUser", b =>
+                {
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
+
+                    b.Property<string>("City")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PostalCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Pwd")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("State")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StreetAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasDiscriminator().HasValue("ApplicationUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
