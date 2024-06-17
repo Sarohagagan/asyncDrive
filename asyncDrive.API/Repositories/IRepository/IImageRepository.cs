@@ -1,4 +1,4 @@
-﻿using asyncDrive.Models.Domain;
+﻿using Models.Domain;
 
 namespace asyncDrive.API.Repositories.IRepository
 {

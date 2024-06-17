@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using asyncDrive.Web.Service.IService;
 
 namespace asyncDrive.Web.Areas.Identity.Pages.Account
 {
@@ -21,11 +22,13 @@ namespace asyncDrive.Web.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly IAuthService _authService;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger, IAuthService authService)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _authService = authService;
         }
 
         /// <summary>
@@ -114,6 +117,9 @@ namespace asyncDrive.Web.Areas.Identity.Pages.Account
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
+                    //to get auth jwt token
+                    await _authService.GetAccessTokenAsync(Input.Email, Input.Password);
+
                     _logger.LogInformation("User logged in.");
                     return LocalRedirect(returnUrl);
                 }

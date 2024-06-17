@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using asyncDrive.API.CustomActionFilters;
 using asyncDrive.API.Repositories;
 using asyncDrive.API.Repositories.IRepository;
-using asyncDrive.Models.Domain;
-using asyncDrive.Models.DTO;
+using Models.Domain;
 using Utility;
+using Models.DTO;
 
 
 namespace asyncDrive.API.Controllers
@@ -24,7 +24,7 @@ namespace asyncDrive.API.Controllers
         }
         //GET ALL Users
         [HttpGet]
-        // [Authorize(Roles ="Reader,Writer")]
+        [Authorize(Roles = $"{SD.Role_SiteAdmin}")]
         public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery] string? filterQuery,
             [FromQuery] string? sortBy, [FromQuery] bool isAscending = true, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 1000)
         {

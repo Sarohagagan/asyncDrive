@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using asyncDrive.Models.Domain;
-using asyncDrive.Models.DTO;
+using Models.Domain;
 using asyncDrive.API.Repositories.IRepository;
+using Models.DTO;
 
 namespace asyncDrive.API.Controllers
 {

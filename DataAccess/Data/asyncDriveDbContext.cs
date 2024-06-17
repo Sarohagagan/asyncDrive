@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using asyncDrive.Models.Domain;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using Models.Domain;
 
 namespace asyncDrive.DataAccess
 {

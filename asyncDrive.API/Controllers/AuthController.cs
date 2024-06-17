@@ -1,8 +1,16 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using asyncDrive.Models.DTO;
 using asyncDrive.API.Repositories.IRepository;
+using Models.DTO;
+using Microsoft.AspNetCore.Identity.Data;
+using System.Security.Claims;
+using Models.Domain;
+using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 namespace asyncDrive.API.Controllers
 {
@@ -12,7 +20,7 @@ namespace asyncDrive.API.Controllers
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly ITokenRepository tokenRepository;
-
+        private static Dictionary<string, string> refreshTokens = new Dictionary<string, string>();
         public AuthController(UserManager<IdentityUser> userManager, ITokenRepository tokenRepository)
         {
             this.userManager = userManager;
@@ -48,7 +56,7 @@ namespace asyncDrive.API.Controllers
 
         [HttpPost]
         [Route("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
+        public async Task<IActionResult> Login([FromBody] TokenDto.LoginRequest loginRequestDto)
         {
             var user = await userManager.FindByEmailAsync(loginRequestDto.UserName);
 
@@ -61,16 +69,70 @@ namespace asyncDrive.API.Controllers
 
                     if (roles != null)
                     {   //Create token
-                        var jwtToken = tokenRepository.CreateJwtToken(user, roles.ToList());
-                        var response = new LoginResponseDto
+                        var accessToken = tokenRepository.GenerateAccessToken(user, roles.ToList());
+                        var refreshToken = tokenRepository.GenerateRefreshToken();
+                        var response = new TokenDto.LoginResponse
                         {
-                            JwtToken = jwtToken,
+                            AccessToken = accessToken,
+                            RefreshToken = refreshToken
                         };
+                        refreshTokens[user.Id] = refreshToken;
                         return Ok(response);
                     }
                 }
             }
-            return BadRequest("User or Password incorrect");
+            return Unauthorized();
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] TokenDto.RefreshRequest request)
+        {
+            var principal = tokenRepository.GetPrincipalFromExpiredToken(request.AccessToken);
+            if (principal == null)
+            {
+                return BadRequest("Invalid access token");
+            }
+
+            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!refreshTokens.ContainsKey(userId) || refreshTokens[userId] != request.RefreshToken)
+            {
+                return BadRequest("Invalid refresh token");
+            }
+            var user = await userManager.FindByIdAsync(userId);
+            //Get roles for User
+            var roles = await userManager.GetRolesAsync(user);
+            var newAccessToken = tokenRepository.GenerateAccessToken(user, roles.ToList());
+            var newRefreshToken = tokenRepository.GenerateRefreshToken();
+
+            refreshTokens[userId] = newRefreshToken;
+            var response = new TokenDto.RefreshResponse
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            };
+            return Ok(response);
+        }
+        //[HttpGet("validate")]
+        //[Authorize]
+        //public IActionResult ValidateToken()
+        //{
+        //    // If the code reaches this point, it means the token is valid.
+        //    return Ok(new { message = "Token is valid." });
+        //}
+
+        [HttpPost("validate")]
+        public async Task<bool> ValidateToken([FromBody] TokenDto.ValidateRequest request)
+        {
+            return await Task.Run(() =>
+            {
+                if (string.IsNullOrWhiteSpace(request.AccessToken))
+                {
+                    return false;
+                }
+
+                return tokenRepository.ValidateToken(request.AccessToken);
+            });
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using asyncDrive.API.Repositories.IRepository;
 using asyncDrive.DataAccess;
-using asyncDrive.Models.Domain;
-using asyncDrive.Models.DTO;
+using Models.DTO;
+using Models.Domain;
 
 namespace asyncDrive.API.Repositories
 {

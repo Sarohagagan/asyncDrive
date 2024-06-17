@@ -10,9 +10,8 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using asyncDrive.Models.Domain;
-using asyncDrive.Models.DTO;
 using asyncDrive.Web.Service;
+using asyncDrive.Web.Service.IService;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -25,6 +24,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Models;
+using Models.Domain;
+using Models.DTO;
 using Newtonsoft.Json;
 using NuGet.Protocol.Plugins;
 using Utility;
@@ -42,6 +43,7 @@ namespace asyncDrive.Web.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly IApiService _apiService;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
@@ -49,7 +51,8 @@ namespace asyncDrive.Web.Areas.Identity.Pages.Account
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IApiService apiService)
         {
             _roleManager = roleManager;
             _userManager = userManager;
@@ -58,6 +61,7 @@ namespace asyncDrive.Web.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _apiService = apiService;
         }
 
         /// <summary>
@@ -194,7 +198,22 @@ namespace asyncDrive.Web.Areas.Identity.Pages.Account
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     //start to add API user data
-                    await ApiService.PostUserData(userId, Input);
+                    var postData = new AddUserRequestDto
+                    {
+                        FirstName = Input.Name,
+                        LastName = Input.Name,
+                        Email = Input.Email,
+                        Password = Input.Password,
+                        PhoneNumber = Input.PhoneNumber,
+                        PostalCode = Input.PostalCode,
+                        Address = Input.StreetAddress,
+                        City = Input.City,
+                        State = Input.State,
+                        CreatedOn = DateTime.UtcNow,
+                        UpdatedOn = DateTime.UtcNow,
+                        LoginUserId = userId,
+                    };
+                    await _apiService.PostAsync<AddUserRequestDto>("https://localhost:7075/api/Users", postData);
                     //end to add API user data
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.FileProviders;
 using Serilog;
+using Microsoft.AspNetCore.Cors;
 
 using asyncDrive.API.Repositories.IRepository;
 using asyncDrive.DataAccess;
@@ -98,6 +99,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     });
 
+// Add CORS services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder => builder
+            .WithOrigins("https://localhost:7122") // Replace with your client's origin
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()); // Optional, if you need to allow credentials
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -118,6 +130,8 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseHttpsRedirection();
+// Use CORS policy
+app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization();
 

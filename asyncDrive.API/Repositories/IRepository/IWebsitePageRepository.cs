@@ -1,5 +1,5 @@
-﻿using asyncDrive.Models.Domain;
-using asyncDrive.Models.DTO;
+﻿using Models.DTO;
+using Models.Domain;
 
 namespace asyncDrive.API.Repositories.IRepository
 {

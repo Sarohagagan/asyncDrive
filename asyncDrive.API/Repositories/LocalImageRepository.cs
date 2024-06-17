@@ -1,6 +1,6 @@
 ﻿using asyncDrive.API.Repositories.IRepository;
 using asyncDrive.DataAccess;
-using asyncDrive.Models.Domain;
+using Models.Domain;
 
 namespace asyncDrive.API.Repositories
 {
