@@ -1,0 +1,60 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio specific files
+.vscode/
+.vs/
+*.sln.docstates
+*.user
+*.suo
+*.userprefs
+*.csproj.user
+
+# Rider specific files
+.idea/
+
+# Visual Studio Code
+*.code-workspace
+
+# Azure Web Apps
+*.Publish.xml
+*.azurePubxml
+
+# Package files
+*.nupkg
+*.snupkg
+*.symbols.nupkg
+*.deps.json
+*.pdb
+*.dbmdl
+*.dbproj.schemaview
+*.dbproj
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+**/packages/*
+project.lock.json
+project.fragment.lock.json
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Misc
+*.log
+*.tlog
+*.tlog.xml
+
+# Temporary files
+*.tmp
+*.temp
