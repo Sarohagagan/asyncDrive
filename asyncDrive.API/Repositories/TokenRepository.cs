@@ -6,16 +6,18 @@ using System.Text;
 using asyncDrive.API.Repositories.IRepository;
 using Models.Domain;
 using Azure.Core;
+using System.Data.SqlClient;
 
 namespace asyncDrive.API.Repositories
 {
     public class TokenRepository : ITokenRepository
     {
         private readonly IConfiguration configuration;
-
+        private readonly string _connectionString;
         public TokenRepository(IConfiguration configuration)
         {
             this.configuration = configuration;
+            _connectionString = configuration["ConnectionStrings:asyncDriveAuthConnectionString"];
         }
         public string GenerateAccessToken(IdentityUser user, List<string> roles)
         {
@@ -47,7 +49,8 @@ namespace asyncDrive.API.Repositories
                 configuration["Jwt:Issuer"],
                 configuration["Jwt:Audience"],
                 claims,
-                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(configuration["AccessTokenExpirySeconds"])),
+                //expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(configuration["AccessTokenExpiry"])),
+                expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: credentials
                 );
 
@@ -103,6 +106,63 @@ namespace asyncDrive.API.Repositories
             {
                 return false;
             }
+        }
+        public void StoreToken(string userId, string token)
+        {
+            var encryptedToken = Encrypt(token);
+            var expirationDate = DateTime.UtcNow.AddDays(30); // Set expiration
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var command = new SqlCommand("INSERT INTO UserTokens (UserId, RefreshToken, ExpirationDate) VALUES (@UserId, @RefreshToken, @ExpirationDate)", connection);
+                command.Parameters.AddWithValue("@UserId", userId);
+                command.Parameters.AddWithValue("@RefreshToken", encryptedToken);
+                command.Parameters.AddWithValue("@ExpirationDate", expirationDate);
+                command.ExecuteNonQuery();
+            }
+        }
+        public void UpdateToken(string userId, string newToken)
+        {
+            var encryptedToken = Encrypt(newToken);
+            var expirationDate = DateTime.UtcNow.AddDays(30); // Set a new expiration
+
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                var command = new SqlCommand("UPDATE UserTokens SET RefreshToken = @RefreshToken, ExpirationDate = @ExpirationDate WHERE UserId = @UserId", connection);
+                command.Parameters.AddWithValue("@UserId", userId);
+                command.Parameters.AddWithValue("@RefreshToken", encryptedToken);
+                command.Parameters.AddWithValue("@ExpirationDate", expirationDate);
+
+                command.ExecuteNonQuery();
+            }
+        }
+        public string RetrieveToken(string userId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var command = new SqlCommand("SELECT RefreshToken FROM UserTokens WHERE UserId = @UserId AND ExpirationDate > @Now", connection);
+                command.Parameters.AddWithValue("@UserId", userId);
+                command.Parameters.AddWithValue("@Now", DateTime.UtcNow);
+
+                var encryptedToken = command.ExecuteScalar() as byte[];
+                return encryptedToken != null ? Decrypt(encryptedToken) : null;
+            }
+        }
+        private byte[] Encrypt(string plainText)
+        {
+            // Implement your encryption logic here (e.g., AES)
+            // Return the encrypted byte array
+            return Encoding.UTF8.GetBytes(plainText);
+        }
+        private string Decrypt(byte[] encryptedText)
+        {
+            // Implement your decryption logic here
+            // Return the decrypted string
+            return Encoding.UTF8.GetString(encryptedText);
         }
     }
 }

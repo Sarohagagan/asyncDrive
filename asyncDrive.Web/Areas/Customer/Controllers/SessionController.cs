@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Mvc;
 
 namespace asyncDrive.Web.Areas.Customer.Controllers
 {
@@ -21,7 +22,12 @@ namespace asyncDrive.Web.Areas.Customer.Controllers
             {
                 return NotFound("Session data not found.");
             }
-            return Ok(new { sessionData = sessionValue });
+            var sessionData = new sessionData
+            {
+                AccessToken = sessionValue,
+                RefreshToken = session.GetString("RefreshToken"),
+            };
+            return Ok(sessionData);
         }
 
         //[HttpPost("data")]
@@ -30,5 +36,10 @@ namespace asyncDrive.Web.Areas.Customer.Controllers
         //    HttpContext.Session.SetString("YourSessionKey", value);
         //    return Ok();
         //}
+    }
+    class sessionData
+    {
+        public string AccessToken { get; set; }
+        public string RefreshToken { get; set; }
     }
 }

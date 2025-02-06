@@ -10,5 +10,8 @@ namespace asyncDrive.API.Repositories.IRepository
         ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
 
         bool ValidateToken(string token);
+        void StoreToken(string userId, string token);
+        void UpdateToken(string userId, string newToken);
+        string RetrieveToken(string userId);
     }
 }

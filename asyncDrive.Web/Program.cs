@@ -36,7 +36,7 @@ builder.Services.AddSession(options =>
 
 // Add HttpContextAccessor to access session in services
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-builder.Services.AddScoped<IApiService, asyncDrive.Web.Service.ApiService>();
+builder.Services.AddScoped<IApiService, ApiService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpContextAccessor(); // Register HttpContextAccessor if needed
 builder.Services.AddHttpClient(); // Register HttpClientFactory if needed
@@ -56,12 +56,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
-
 app.UseAuthTokenHandler();
-
 app.UseAuthentication();
 app.UseAuthorization();
+
+
+
 
 app.MapRazorPages();
 app.MapControllerRoute(

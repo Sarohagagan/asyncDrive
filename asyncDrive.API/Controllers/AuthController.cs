@@ -20,39 +20,39 @@ namespace asyncDrive.API.Controllers
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly ITokenRepository tokenRepository;
-        private static Dictionary<string, string> refreshTokens = new Dictionary<string, string>();
+        //private static Dictionary<string, string> refreshTokens = new Dictionary<string, string>();
         public AuthController(UserManager<IdentityUser> userManager, ITokenRepository tokenRepository)
         {
             this.userManager = userManager;
             this.tokenRepository = tokenRepository;
         }
 
-        [HttpPost]
-        [Route("Register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestDto registerRequestDto)
-        {
-            var identityUser = new IdentityUser
-            {
-                UserName = registerRequestDto.Username,
-                Email = registerRequestDto.Username
-            };
+        //[HttpPost]
+        //[Route("Register")]
+        //public async Task<IActionResult> Register([FromBody] RegisterRequestDto registerRequestDto)
+        //{
+        //    var identityUser = new IdentityUser
+        //    {
+        //        UserName = registerRequestDto.Username,
+        //        Email = registerRequestDto.Username
+        //    };
 
-            var identityResult = await userManager.CreateAsync(identityUser, registerRequestDto.Password);
+        //    var identityResult = await userManager.CreateAsync(identityUser, registerRequestDto.Password);
 
-            if (identityResult.Succeeded)
-            {
-                //Add roles to this User
-                if (registerRequestDto.Roles != null && registerRequestDto.Roles.Any())
-                {
-                    identityResult = await userManager.AddToRolesAsync(identityUser, registerRequestDto.Roles);
-                    if (identityResult.Succeeded)
-                    {
-                        return Ok("User was registered successfully!");
-                    }
-                }
-            }
-            return BadRequest("Something went wrong");
-        }
+        //    if (identityResult.Succeeded)
+        //    {
+        //        //Add roles to this User
+        //        if (registerRequestDto.Roles != null && registerRequestDto.Roles.Any())
+        //        {
+        //            identityResult = await userManager.AddToRolesAsync(identityUser, registerRequestDto.Roles);
+        //            if (identityResult.Succeeded)
+        //            {
+        //                return Ok("User was registered successfully!");
+        //            }
+        //        }
+        //    }
+        //    return BadRequest("Something went wrong");
+        //}
 
         [HttpPost]
         [Route("Login")]
@@ -76,7 +76,15 @@ namespace asyncDrive.API.Controllers
                             AccessToken = accessToken,
                             RefreshToken = refreshToken
                         };
-                        refreshTokens[user.Id] = refreshToken;
+                        //refreshTokens[user.Id] = refreshToken;
+                        if (tokenRepository.RetrieveToken(user.Id) != null)
+                        {
+                            tokenRepository.UpdateToken(user.Id, refreshToken);
+                        }
+                        else
+                        {
+                            tokenRepository.StoreToken(user.Id, refreshToken);
+                        }
                         return Ok(response);
                     }
                 }
@@ -84,7 +92,7 @@ namespace asyncDrive.API.Controllers
             return Unauthorized();
         }
 
-        [HttpPost("refresh")]
+        [HttpPost("Refresh")]
         public async Task<IActionResult> Refresh([FromBody] TokenDto.RefreshRequest request)
         {
             var principal = tokenRepository.GetPrincipalFromExpiredToken(request.AccessToken);
@@ -94,18 +102,23 @@ namespace asyncDrive.API.Controllers
             }
 
             var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (!refreshTokens.ContainsKey(userId) || refreshTokens[userId] != request.RefreshToken)
+            if (userId == null)
+                return Unauthorized();
+            var refreshTokens = tokenRepository.RetrieveToken(userId);
+            if (refreshTokens!=null || refreshTokens != request.RefreshToken)
             {
                 return BadRequest("Invalid refresh token");
             }
             var user = await userManager.FindByIdAsync(userId);
             //Get roles for User
+            if(user == null)
+                return Unauthorized();
             var roles = await userManager.GetRolesAsync(user);
             var newAccessToken = tokenRepository.GenerateAccessToken(user, roles.ToList());
             var newRefreshToken = tokenRepository.GenerateRefreshToken();
 
-            refreshTokens[userId] = newRefreshToken;
+            //refreshTokens[userId] = newRefreshToken;
+            tokenRepository.UpdateToken(user.Id, newRefreshToken);
             var response = new TokenDto.RefreshResponse
             {
                 AccessToken = newAccessToken,

@@ -11,6 +11,7 @@ namespace asyncDrive.Web.Middlewares
 
         public async Task InvokeAsync(HttpContext context)
         {
+            //var userIdentity = context.User.Identity;
             if (!string.IsNullOrWhiteSpace(context.Session.GetString("AccessToken")))
             {
                 var token = context.Session.GetString("AccessToken");

@@ -6,6 +6,7 @@ using asyncDrive.API.Repositories.IRepository;
 using Models.Domain;
 using Utility;
 using Models.DTO;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace asyncDrive.API.Controllers
@@ -16,11 +17,12 @@ namespace asyncDrive.API.Controllers
     {
         //private readonly asyncDriveDbContext dbContext;
         private readonly IUnitOfWork unitOfWork;
-
-        public UsersController(IUnitOfWork unitOfWork)
+        private readonly UserManager<IdentityUser> userManager;
+        public UsersController(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager)
         {
             //this.dbContext = dbContext;
             this.unitOfWork = unitOfWork;
+            this.userManager = userManager;
         }
         //GET ALL Users
         [HttpGet]
@@ -31,7 +33,7 @@ namespace asyncDrive.API.Controllers
 
             // Get Data From Database - Domain models
             var usersDomain = await unitOfWork.User.GetAllAsync(filterOn, filterQuery, sortBy, isAscending, pageNumber, pageSize);
-
+           
             // Map Domain Models to DTOs
             var userDto = new List<UserDto>();
             foreach (var userDomain in usersDomain)
@@ -82,44 +84,78 @@ namespace asyncDrive.API.Controllers
         }
         //POST to Create New User
         [HttpPost]
-        [Authorize(Roles = $"{SD.Role_SiteAdmin+","+SD.Role_SuperAdmin}")]
+        //[Authorize(Roles = $"{SD.Role_SiteAdmin+","+SD.Role_SuperAdmin}")]
         public async Task<IActionResult> Create([FromBody] AddUserRequestDto addUserRequestDto)
         {
             if (ModelState.IsValid)
-            {
-                var userDomainModel = new User
+            {                ;
+                var appUser = new ApplicationUser
                 {
-                    FirstName = addUserRequestDto.FirstName,
-                    LastName = addUserRequestDto.LastName,
+                    UserName = addUserRequestDto.FirstName,
                     Email = addUserRequestDto.Email,
-                    Password = addUserRequestDto.Password,
-                    PhoneNumber = addUserRequestDto.PhoneNumber,
-                    PostalCode = addUserRequestDto.PostalCode,
-                    Address = addUserRequestDto.Address,
+                    //start custom code to save custom application user fields
+                    Name = addUserRequestDto.FirstName + " " + addUserRequestDto.LastName,
+                    StreetAddress = addUserRequestDto.Address,
                     City = addUserRequestDto.City,
                     State = addUserRequestDto.State,
-                    Country = addUserRequestDto.Country,
-                    CreatedOn = DateTime.UtcNow,
-                    UpdatedOn = DateTime.UtcNow,
-                    LoginUserId = addUserRequestDto.LoginUserId,
+                    PostalCode = addUserRequestDto.PostalCode,
+                    PhoneNumber = addUserRequestDto.PhoneNumber,
+                    Pwd = addUserRequestDto.Password,
+                    //end custom code to save custom application user fields
                 };
 
-                userDomainModel = await unitOfWork.User.AddAsync(userDomainModel);
-                await unitOfWork.SaveAsync();
-                var userDto = new UserDto
+                var identityResult = await userManager.CreateAsync(appUser, addUserRequestDto.Password);
+
+                if (identityResult.Succeeded)
                 {
-                    Id = userDomainModel.Id,
-                    FirstName = userDomainModel.FirstName,
-                    LastName = userDomainModel.LastName,
-                    Email = userDomainModel.Email,
-                    PhoneNumber = userDomainModel.PhoneNumber,
-                    PostalCode = userDomainModel.PostalCode,
-                    Address = userDomainModel.Address,
-                    City = userDomainModel.City,
-                    State = userDomainModel.State,
-                    Country = userDomainModel.Country
-                };
-                return CreatedAtAction(nameof(GetById), new { id = userDto.Id }, userDto);
+                    //Add roles to this User
+                    if (addUserRequestDto.Roles != null && addUserRequestDto.Roles.Any())
+                    {
+                        identityResult = await userManager.AddToRolesAsync(appUser, addUserRequestDto.Roles);
+                        if (identityResult.Succeeded)
+                        {
+                            var user = await userManager.FindByEmailAsync(appUser.Email);
+                            if (user == null || !(await userManager.IsEmailConfirmedAsync(user)))
+                            {
+                                return BadRequest(ModelState);
+                            }
+                            var userDomainModel = new User
+                            {
+                                FirstName = addUserRequestDto.FirstName,
+                                LastName = addUserRequestDto.LastName,
+                                Email = addUserRequestDto.Email,
+                                Password = addUserRequestDto.Password,
+                                PhoneNumber = addUserRequestDto.PhoneNumber,
+                                PostalCode = addUserRequestDto.PostalCode,
+                                Address = addUserRequestDto.Address,
+                                City = addUserRequestDto.City,
+                                State = addUserRequestDto.State,
+                                Country = addUserRequestDto.Country,
+                                CreatedOn = DateTime.UtcNow,
+                                UpdatedOn = DateTime.UtcNow,
+                                LoginUserId = user.Id,
+                            };
+
+                            userDomainModel = await unitOfWork.User.AddAsync(userDomainModel);
+                            await unitOfWork.SaveAsync();
+                            var userDto = new UserDto
+                            {
+                                Id = userDomainModel.Id,
+                                FirstName = userDomainModel.FirstName,
+                                LastName = userDomainModel.LastName,
+                                Email = userDomainModel.Email,
+                                PhoneNumber = userDomainModel.PhoneNumber,
+                                PostalCode = userDomainModel.PostalCode,
+                                Address = userDomainModel.Address,
+                                City = userDomainModel.City,
+                                State = userDomainModel.State,
+                                Country = userDomainModel.Country
+                            };
+                            return Ok(userDto);
+                        }
+                    }
+                }
+                return BadRequest(ModelState);
             }
             else
                 return BadRequest(ModelState);

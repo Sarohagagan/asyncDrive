@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
+
 namespace Models.DTO
 {
     public class AddUserRequestDto
@@ -26,5 +27,12 @@ namespace Models.DTO
         public DateTime UpdatedOn { get; set; }
 
         public string LoginUserId { get; set; }
+        public string[] Roles { get; set; }
+        public List<Role> RoleList { get; set; }
+    }
+    public class Role
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
     }
 }

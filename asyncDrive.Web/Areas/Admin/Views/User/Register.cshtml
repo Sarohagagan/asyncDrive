@@ -1,0 +1,50 @@
+﻿@model AddUserRequestDto
+<div class="container">
+    <div class="row pt-4 pb-3">
+        <div class="col-6">
+            <h2 class="text-primary">Register New User</h2>
+        </div>
+    </div>
+    <div class="border p-3 mt-4">
+        <div class="row pb-2">
+            <h2 class="text-primary">New User</h2>
+            <hr />
+        </div>
+        <div class="row">
+            <div class="col-10">
+                <div class="mb-3 row p-1">
+                    <label asp-for="FirstName" class="p-0"></label>
+                    <input asp-for="FirstName" class="form-control" />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+                <div class="mb-3 row p-1">
+                    <label asp-for="Password" class="p-0"></label>
+                    <textarea asp-for="Password" class="form-control"></textarea>
+                </div>
+                <div class="mb-3 row p-1">
+                    @* <select asp-for="SelectedRoleId" class="form-select"> *@
+                    <select class="form-select">
+                        <option disabled selected>--Select Role--</option>
+                        @foreach (var role in Model.RoleList)
+                        {
+                            <option value="@role.Id">@role.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-6 col-md-3">
+                        <button type="submit" class="btn btn-primary form-control">Create</button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <a asp-controller="product" asp-action="Index" class="btn btn-secondary form-control">
+                            Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/user.js"></script>
+}
