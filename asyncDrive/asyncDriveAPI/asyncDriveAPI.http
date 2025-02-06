@@ -1,6 +1,0 @@
-@asyncDriveAPI_HostAddress = http://localhost:5222
-
-GET {{asyncDriveAPI_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
